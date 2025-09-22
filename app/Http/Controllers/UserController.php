@@ -10,8 +10,14 @@ class UserController extends Controller
     // Show feed for regular users
     public function feed()
     {
-        $posts = Post::with(['user', 'likes', 'comments.replies', 'favourites'])->latest()->get();
-        return view('users.feed', compact('posts'));
+        $posts = Post::with(['user', 'likes', 'comments.user', 'comments.likes', 'favourites'])->latest()->get();
+
+        // If it's an AJAX request, return JSON
+        if (request()->ajax()) {
+            return response()->json($posts);
+        }
+
+        return view('user.feed', compact('posts'));
     }
 
     // Like a post
@@ -42,5 +48,16 @@ class UserController extends Controller
             'post_id' => $postId,
         ]);
         return response()->json($fav);
+    }
+
+    // Store comment
+    public function storeComment()
+    {
+        $comment = \App\Models\PostHasComment::create([
+            'user_id' => Auth::id(),
+            'post_id' => request('post_id'),
+            'comment' => request('comment'),
+        ]);
+        return response()->json($comment);
     }
 }

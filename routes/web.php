@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/role/{role}', [RoleController::class, 'selectRole'])->name('role.select');
 });
 
 
@@ -47,12 +49,13 @@ Route::middleware('user')->group(function () {
     Route::post('/posts/{id}/like', [UserController::class, 'likePost']);
     Route::post('/comments/{id}/like', [UserController::class, 'likeComment']);
     Route::post('/posts/{id}/favourite', [UserController::class, 'addFavourite']);
+    Route::post('/comments', [UserController::class, 'storeComment']);
 });
 
-Route::prefix('/members')->middleware('member')->group(function () {
- Route::get('/feed', [MemberController::class, 'feed'])->name('members.feed');
-    Route::get('/posts/create', [MemberController::class, 'createPost'])->name('members.create_post');
-    Route::post('/posts', [MemberController::class, 'storePost'])->name('members.store_post');
+Route::middleware('member')->group(function () {
+    Route::get('/posts/create', [MemberController::class, 'createPost'])->name('member.create_post');
+    Route::post('/posts', [MemberController::class, 'storePost'])->name('member.store_post');
+   
 });
 
 require __DIR__.'/auth.php';

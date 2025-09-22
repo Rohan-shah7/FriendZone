@@ -8,17 +8,10 @@ use Illuminate\Support\Facades\Auth;
 
 class MemberController extends Controller
 {
-    // Show member feed
-    public function feed()
-    {
-        $posts = Post::with(['user', 'likes', 'comments.replies', 'favourites'])->latest()->get();
-        return view('members.feed', compact('posts'));
-    }
-
     // Show create post form
     public function createPost()
     {
-        return view('members.create_post');
+        return view('member.create_post');
     }
 
     // Store new post
@@ -36,6 +29,6 @@ class MemberController extends Controller
             'status' => 'pending', // members' posts need approval
         ]);
 
-        return redirect()->route('members.feed')->with('success', 'Post created! You are now a full member.');
+        return redirect()->route('user.feed')->with('success', 'Post created successfully! Your post is pending approval.');
     }
 }
