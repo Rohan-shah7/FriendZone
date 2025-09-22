@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,25 +34,25 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('admin')->group(function () {
 
-    Route::get('/admin', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard.index');
+   Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::put('/admin/posts/{post}/approve', [AdminController::class, 'approvePost']);
+    Route::put('/admin/posts/{post}/reject', [AdminController::class, 'rejectPost']);
+    Route::delete('/admin/posts/{post}', [AdminController::class, 'deletePost']);
 });
 
 
 
 Route::middleware('user')->group(function () {
-
-    Route::get('/user', function () {
-        return view('user.dashboard');
-    })->name('user.dashboard');
+ Route::get('/feed', [UserController::class, 'feed'])->name('user.feed');
+    Route::post('/posts/{id}/like', [UserController::class, 'likePost']);
+    Route::post('/comments/{id}/like', [UserController::class, 'likeComment']);
+    Route::post('/posts/{id}/favourite', [UserController::class, 'addFavourite']);
 });
 
-Route::middleware('member')->group(function () {
-
-    Route::get('/member', function () {
-        return view('member.dashboard');
-    })->name('member.dashboard');
+Route::prefix('/members')->middleware('member')->group(function () {
+ Route::get('/feed', [MemberController::class, 'feed'])->name('members.feed');
+    Route::get('/posts/create', [MemberController::class, 'createPost'])->name('members.create_post');
+    Route::post('/posts', [MemberController::class, 'storePost'])->name('members.store_post');
 });
 
 require __DIR__.'/auth.php';
