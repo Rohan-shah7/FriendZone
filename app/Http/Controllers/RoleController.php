@@ -13,7 +13,11 @@ class RoleController extends Controller
 
         // Validate that the user has the requested role
         if ($user->role !== $role) {
-            abort(403, 'Access denied. You do not have the required role.');
+            $errorMessage = "Access Denied: You need '{$role}' role to access this section. ";
+            $errorMessage .= "Your current role is '{$user->role}'. ";
+            $errorMessage .= "Please contact an administrator to upgrade your role.";
+
+            abort(403, $errorMessage);
         }
 
         // Redirect based on role

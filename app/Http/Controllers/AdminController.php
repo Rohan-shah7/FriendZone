@@ -33,4 +33,23 @@ class AdminController extends Controller
         $post->delete();
         return redirect()->back()->with('success', 'Post deleted.');
     }
+
+    // Show users management
+    public function users()
+    {
+        $users = \App\Models\User::latest()->get();
+        return view('admin.users', compact('users'));
+    }
+
+    // Update user role
+    public function updateUserRole(\App\Models\User $user, Request $request)
+    {
+        $request->validate([
+            'role' => ['required', 'string', 'in:user,member,admin'],
+        ]);
+
+        $user->update(['role' => $request->role]);
+
+        return redirect()->back()->with('success', "User {$user->name} role updated to {$request->role}.");
+    }
 }

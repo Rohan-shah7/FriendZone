@@ -9,12 +9,23 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-6">Welcome, {{ auth()->user()->name }}!</h3>
+                    <h3 class="text-lg font-semibold mb-2">Welcome, {{ auth()->user()->name }}!</h3>
+                    <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Your current role:</strong>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 ml-1">
+                                {{ ucfirst(auth()->user()->role) }}
+                            </span>
+                        </p>
+                        <p class="text-xs text-blue-600 mt-2">
+                            You can only access sections that match your assigned role. Contact an administrator to change your role.
+                        </p>
+                    </div>
                     <p class="mb-6 text-gray-600">Choose how you want to continue:</p>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Admin Option -->
-                        @if(auth()->user()->role === 'admin')
                         <div class="bg-red-50 border border-red-200 rounded-lg p-6 text-center hover:bg-red-100 transition">
                             <div class="mb-4">
                                 <i class="fas fa-crown text-red-500 text-4xl"></i>
@@ -26,7 +37,6 @@
                                 Enter Admin Panel
                             </a>
                         </div>
-                        @endif
 
                         <!-- Member Option -->
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center hover:bg-blue-100 transition">

@@ -35,8 +35,9 @@ Route::middleware('auth')->group(function () {
 
 
 Route::middleware('admin')->group(function () {
-
    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::put('/admin/users/{user}/role', [AdminController::class, 'updateUserRole'])->name('admin.users.role');
     Route::put('/admin/posts/{post}/approve', [AdminController::class, 'approvePost']);
     Route::put('/admin/posts/{post}/reject', [AdminController::class, 'rejectPost']);
     Route::delete('/admin/posts/{post}', [AdminController::class, 'deletePost']);
@@ -50,12 +51,13 @@ Route::middleware('user')->group(function () {
     Route::post('/comments/{id}/like', [UserController::class, 'likeComment']);
     Route::post('/posts/{id}/favourite', [UserController::class, 'addFavourite']);
     Route::post('/comments', [UserController::class, 'storeComment']);
-});
 
-Route::middleware('member')->group(function () {
     Route::get('/posts/create', [MemberController::class, 'createPost'])->name('member.create_post');
     Route::post('/posts', [MemberController::class, 'storePost'])->name('member.store_post');
-   
+
 });
+
+
+
 
 require __DIR__.'/auth.php';

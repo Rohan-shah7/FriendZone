@@ -28,10 +28,100 @@
     </div>
 
     <!-- Posts container -->
-    <div id="postsContainer" class="space-y-6"></div>
+    <div id="postsContainer" class="space-y-6">
+        @if($posts->count() > 0)
+            @foreach($posts as $post)
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden" id="post-{{ $post->id }}">
+                <!-- Post Header -->
+                <div class="p-4 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+                                {{ substr($post->user->name, 0, 1) }}
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">{{ $post->user->name }}</h3>
+                                <p class="text-sm text-gray-500">{{ $post->created_at->format('M d, Y') }}</p>
+                            </div>
+                        </div>
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                            Verified
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Post Content -->
+                <div class="p-4">
+                    @if($post->post)
+                        <h4 class="font-semibold text-lg text-gray-900 mb-2">{{ $post->post }}</h4>
+                    @endif
+                    <p class="text-gray-700 leading-relaxed">{{ $post->postdetails }}</p>
+                </div>
+
+                <!-- Post Actions -->
+                <div class="px-4 py-3 border-t border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <button class="likePostBtn flex items-center space-x-1 text-gray-600 hover:text-blue-600 transition" data-id="{{ $post->id }}">
+                                <i class="fas fa-heart"></i>
+                                <span>Like ({{ $post->likes->count() }})</span>
+                            </button>
+                            <button class="favouritePostBtn flex items-center space-x-1 text-gray-600 hover:text-yellow-600 transition" data-id="{{ $post->id }}">
+                                <i class="fas fa-star"></i>
+                                <span>Favourite</span>
+                            </button>
+                            <span class="flex items-center space-x-1 text-gray-500">
+                                <i class="fas fa-comment"></i>
+                                <span>{{ $post->comments->count() }} comments</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="border-t border-gray-100">
+                    <div class="comments p-4 space-y-3">
+                        @foreach($post->comments as $comment)
+                        <div class="flex items-start space-x-3 bg-gray-50 rounded-lg p-3">
+                            <div class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center text-white text-sm font-medium">
+                                {{ substr($comment->user->name, 0, 1) }}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-medium text-sm text-gray-900">{{ $comment->user->name }}</span>
+                                    <span class="text-xs text-gray-500">{{ $comment->created_at->format('M d, Y') }}</span>
+                                </div>
+                                <p class="text-gray-700 text-sm mt-1">{{ $comment->comment }}</p>
+                                <button class="likeCommentBtn text-xs text-gray-500 hover:text-blue-600 transition mt-1" data-id="{{ $comment->id }}">
+                                    <i class="fas fa-heart mr-1"></i>Like ({{ $comment->likes->count() }})
+                                </button>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Add Comment -->
+                    <div class="p-4 border-t border-gray-100 bg-gray-50">
+                        <div class="flex items-center space-x-3">
+                            <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                                {{ substr(auth()->user()->name, 0, 1) }}
+                            </div>
+                            <input type="text"
+                                   class="comment-input flex-1 px-3 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                   placeholder="Write a comment..."
+                                   data-postid="{{ $post->id }}">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 ml-11">Press Enter to post your comment</p>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        @endif
+    </div>
 
     <!-- Empty state -->
-    <div id="emptyState" class="text-center py-12 hidden">
+    @if($posts->count() === 0)
+    <div id="emptyState" class="text-center py-12">
         <div class="text-gray-400 mb-4">
             <i class="fas fa-comments text-6xl"></i>
         </div>
@@ -43,6 +133,7 @@
             Create Your First Post
         </a>
     </div>
+    @endif
 </div>
 @endsection
 
@@ -53,130 +144,10 @@ $(document).ready(function() {
         headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
     });
 
-    function fetchPosts() {
-        $('#loadingIndicator').show();
-        $('#postsContainer').hide();
-        $('#emptyState').hide();
-
-        $.get('{{ route("user.feed") }}', function(posts) {
-            let html = '';
-
-            if (posts.length === 0) {
-                $('#emptyState').show();
-            } else {
-                posts.forEach(post => {
-                    // Only show verified posts
-                    if (post.status === 'verified') {
-                        html += `
-                        <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden" id="post-${post.id}">
-                            <!-- Post Header -->
-                            <div class="p-4 border-b border-gray-100">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
-                                            ${post.user.name.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div>
-                                            <h3 class="font-semibold text-gray-900">${post.user.name}</h3>
-                                            <p class="text-sm text-gray-500">${new Date(post.created_at).toLocaleDateString()}</p>
-                                        </div>
-                                    </div>
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                        Verified
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Post Content -->
-                            <div class="p-4">
-                                ${post.post ? `<h4 class="font-semibold text-lg text-gray-900 mb-2">${post.post}</h4>` : ''}
-                                <p class="text-gray-700 leading-relaxed">${post.postdetails}</p>
-                            </div>
-
-                            <!-- Post Actions -->
-                            <div class="px-4 py-3 border-t border-gray-100">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-4">
-                                        <button class="likePostBtn flex items-center space-x-1 text-gray-600 hover:text-blue-600 transition" data-id="${post.id}">
-                                            <i class="fas fa-heart"></i>
-                                            <span>Like (${post.likes.length})</span>
-                                        </button>
-                                        <button class="favouritePostBtn flex items-center space-x-1 text-gray-600 hover:text-yellow-600 transition" data-id="${post.id}">
-                                            <i class="fas fa-star"></i>
-                                            <span>Favourite</span>
-                                        </button>
-                                        <span class="flex items-center space-x-1 text-gray-500">
-                                            <i class="fas fa-comment"></i>
-                                            <span>${post.comments.length} comments</span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Comments Section -->
-                            <div class="border-t border-gray-100">
-                                <div class="comments p-4 space-y-3">`;
-
-                        post.comments.forEach(comment => {
-                            html += `
-                            <div class="flex items-start space-x-3 bg-gray-50 rounded-lg p-3">
-                                <div class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center text-white text-sm font-medium">
-                                    ${comment.user.name.charAt(0).toUpperCase()}
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="font-medium text-sm text-gray-900">${comment.user.name}</span>
-                                        <span class="text-xs text-gray-500">${new Date(comment.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                    <p class="text-gray-700 text-sm mt-1">${comment.comment}</p>
-                                    <button class="likeCommentBtn text-xs text-gray-500 hover:text-blue-600 transition mt-1" data-id="${comment.id}">
-                                        <i class="fas fa-heart mr-1"></i>Like (${comment.likes.length})
-                                    </button>
-                                </div>
-                            </div>`;
-                        });
-
-                        html += `
-                                </div>
-
-                                <!-- Add Comment -->
-                                <div class="p-4 border-t border-gray-100 bg-gray-50">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
-                                            {{ substr(auth()->user()->name, 0, 1) }}
-                                        </div>
-                                        <input type="text"
-                                               class="comment-input flex-1 px-3 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                                               placeholder="Write a comment..."
-                                               data-postid="${post.id}">
-                                    </div>
-                                    <p class="text-xs text-gray-500 mt-2 ml-11">Press Enter to post your comment</p>
-                                </div>
-                            </div>
-                        </div>`;
-                    }
-                });
-
-                if (html === '') {
-                    $('#emptyState').show();
-                } else {
-                    $('#postsContainer').html(html).show();
-                }
-            }
-
-            $('#loadingIndicator').hide();
-        }).fail(function() {
-            $('#loadingIndicator').hide();
-            $('#postsContainer').html(`
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    Failed to load posts. Please refresh the page.
-                </div>
-            `).show();
-        });
+    // Refresh posts function
+    function refreshPosts() {
+        location.reload();
     }
-
-    fetchPosts();
 
     // Like post
     $(document).on('click', '.likePostBtn', function() {
@@ -185,7 +156,8 @@ $(document).ready(function() {
 
         $.post(`/posts/${postId}/like`, function() {
             button.addClass('text-blue-600');
-            fetchPosts();
+            // Update the like count
+            setTimeout(refreshPosts, 500);
         }).fail(function() {
             alert('Failed to like post. Please try again.');
         });
@@ -198,7 +170,7 @@ $(document).ready(function() {
 
         $.post(`/comments/${commentId}/like`, function() {
             button.addClass('text-blue-600');
-            fetchPosts();
+            setTimeout(refreshPosts, 500);
         }).fail(function() {
             alert('Failed to like comment. Please try again.');
         });
@@ -211,7 +183,7 @@ $(document).ready(function() {
 
         $.post(`/posts/${postId}/favourite`, function() {
             button.addClass('text-yellow-600');
-            fetchPosts();
+            setTimeout(refreshPosts, 500);
         }).fail(function() {
             alert('Failed to favourite post. Please try again.');
         });
@@ -233,7 +205,7 @@ $(document).ready(function() {
 
             $.post('/comments', { post_id: postId, comment: comment }, function() {
                 inputField.val('').prop('disabled', false);
-                fetchPosts();
+                setTimeout(refreshPosts, 500);
             }).fail(function() {
                 inputField.prop('disabled', false);
                 alert('Failed to post comment. Please try again.');

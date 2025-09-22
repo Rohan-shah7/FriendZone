@@ -10,7 +10,11 @@ class UserController extends Controller
     // Show feed for regular users
     public function feed()
     {
-        $posts = Post::with(['user', 'likes', 'comments.user', 'comments.likes', 'favourites'])->latest()->get();
+        // Only show verified posts for users
+        $posts = Post::with(['user', 'likes', 'comments.user', 'comments.likes', 'favourites'])
+                    ->where('status', 'verified')
+                    ->latest()
+                    ->get();
 
         // If it's an AJAX request, return JSON
         if (request()->ajax()) {

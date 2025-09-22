@@ -6,6 +6,9 @@
         <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
         <div class="flex items-center space-x-4">
             <span class="text-sm text-gray-600">Total Posts: {{ $posts->count() }}</span>
+            <a href="{{ route('admin.users') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                Manage Users
+            </a>
             <a href="{{ route('dashboard') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
                 Back to Dashboard
             </a>
